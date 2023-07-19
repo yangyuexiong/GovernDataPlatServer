@@ -1,0 +1,33 @@
+[[source]]
+url = "https://pypi.doubanio.com/simple"
+verify_ssl = true
+name = "pypi"
+install_search_all_sources = true
+
+[packages]
+flask = {extras = ["async"], version = "2.0.2"}
+requests = "*"
+flask-cors = "*"
+flask-migrate = "*"
+flask-restful = "*"
+pymysql = "*"
+loguru = "*"
+redis = "*"
+shortuuid = "*"
+cryptography = "*"
+apscheduler = "*"
+flask-apscheduler = "*"
+psycopg2-binary = "*"
+celery = "*"
+psutil = "*"
+pymssql = "*"
+dbutils = "*"
+aiomysql = "*"
+aioredis = "*"
+selenium = "*"
+aiohttp = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

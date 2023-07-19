@@ -1,0 +1,22 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2023/1/22 23:35
+# @Author  : yangyuexiong
+# @Email   : yang6333yyx@126.com
+# @File    : response_code.py
+# @Software: PyCharm
+
+
+SUCCESS, SUCCESS_MESSAGE = 200, "操作成功"
+POST_SUCCESS, POST_MESSAGE = 201, "创建成功"
+PUT_SUCCESS, PUT_MESSAGE = 203, "编辑成功"
+DEL_SUCCESS, DEL_MESSAGE = 204, "删除成功"
+
+UNAUTHORIZED, UNAUTHORIZED_MESSAGE = 401, "未授权"
+
+REQUIRED, REQUIRED_MESSAGE = 10001, "必传参数"
+NO_DATA, NO_DATA_MESSAGE = 10002, "未找到数据"
+UNIQUE_ERROR, UNIQUE_ERROR_MESSAGE = 10003, "唯一校验"
+TYPE_ERROR, TYPE_ERROR_MESSAGE = 10004, "参数类型错误"
+BUSINESS_ERROR, BUSINESS_ERROR_MESSAGE = 10005, "业务校验错误"
+DATA_ERROR, DATA_ERROR_MESSAGE = 10006, "请求参数错误"
+NOT_CREATOR_ERROR, NOT_CREATOR_ERROR_MESSAGE = 10007, "未公开使用，非创建人，无法修改。"
