@@ -119,18 +119,6 @@ class CaseEnvPageApi(MethodView):
         page = data.get('page')
         size = data.get('size')
 
-        sql = """
-        SELECT * 
-        FROM exile5_test_env  
-        WHERE 
-        id = "id" 
-        and env_url LIKE"%%" 
-        and env_name LIKE"%%" 
-        and is_deleted = 0
-        and creator_id = 1
-        ORDER BY create_timestamp LIMIT 0,20;
-        """
-
         where_dict = {
             "project_id": project_id,
             "id": env_id,
@@ -146,5 +134,4 @@ class CaseEnvPageApi(MethodView):
             page=page,
             size=size
         )
-
         return api_result(code=SUCCESS, message=SUCCESS_MESSAGE, data=result_data)
