@@ -20,42 +20,20 @@ class DashboardApi(MethodView):
 
         data = request.get_json()
 
-        total_size_sql = """
-        SELECT 
-            table_schema AS `Database`,
-            round(SUM(data_length + index_length) / 1024 / 1024, 2) AS `TotalSize(MB)`
-        FROM 
-            information_schema.TABLES
-        WHERE 
-            table_schema = 'exiletestplatform';
-        """
-        query_db_total_size = project_db.select(total_size_sql, only=True)
-        db_name = query_db_total_size.get('Database')
-        db_total_size = query_db_total_size.get('TotalSize(MB)')
+        dc = DBDataCount(db_example=project_db)
+
+        # db磁盘占用
+        db_name, db_total_size = dc.gen_db_total_size()
 
         # 启动时间
-        query_db_uptime = project_db.select("SHOW GLOBAL STATUS LIKE 'Uptime';", only=True)
-        db_uptime = int(query_db_uptime.get('Value', 0))
-        current_timestamp = int(time.time())
-        current_datetime = datetime.datetime.fromtimestamp(current_timestamp).strftime("%Y-%m-%d %H:%M:%S")
-        timestamp = current_timestamp - db_uptime
-        db_server_start_time = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        db_server_start_time = dc.gen_db_start_time()
 
         # 运行时长
-        dt1 = datetime.datetime.strptime(current_datetime, '%Y-%m-%d %H:%M:%S')
-        dt2 = datetime.datetime.strptime(db_server_start_time, '%Y-%m-%d %H:%M:%S')
-        dt_result = dt1 - dt2
-        days = dt_result.days
-        hours, remainder = divmod(dt_result.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        run_time = f"{days}天 {hours}个小时 {minutes}分钟"
+        run_time = dc.gen_db_run_time()
 
         # 用户连接数，执行中语句数
-        query_user_connections = project_db.select("SHOW PROCESSLIST;")
-        user_list = list(filter(lambda obj: obj.get("Info") != 'SHOW PROCESSLIST', query_user_connections))
-        user_connections = len(user_list)
-        sql_list = [{"user": q.get('User'), "sql": q.get('Info')} for q in user_list if q.get('Info')]
-        executing_sql = len(sql_list)
+        user_list, user_connections, sql_list, executing_sql = dc.gen_user_connections_and_execute_sql()
+
         cpu_usage = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         memory_usage = memory.percent

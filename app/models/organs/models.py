@@ -15,9 +15,7 @@ class Organs(BaseModel):
 
     organs_name = db.Column(db.String(255), nullable=False, comment='单位名称')
     example = db.Column(db.String(255), nullable=True, comment='实例')
-    ip_port = db.Column(db.String(255), nullable=True, comment='ip+端口')
-    ip = db.Column(db.String(255), nullable=True, comment='ip')
-    port = db.Column(db.Integer, nullable=True, comment='端口')
+    db_id = db.Column(BIGINT(20, unsigned=True), comment='数据库id')
     creator = db.Column(db.String(32), comment='创建人')
     creator_id = db.Column(BIGINT(20, unsigned=True), comment='创建人id')
     modifier = db.Column(db.String(32), comment='更新人')
@@ -25,6 +23,6 @@ class Organs(BaseModel):
     remark = db.Column(db.String(255), comment='备注')
 
     def __repr__(self):
-        return 'Organs 模型对象-> ID:{} 单位名称:{} 实例:{} ip:{} 端口:{}'.format(
-            self.id, self.organs_name, self.example, self.ip, self.port
+        return 'Organs 模型对象-> ID:{} 单位名称:{} 实例:{}'.format(
+            self.id, self.organs_name, self.example
         )

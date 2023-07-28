@@ -23,7 +23,7 @@ from flask import abort, render_template, request, g
 
 from ExtendRegister.db_register import db
 from common.libs.data_dict import GlobalsDict, expect_val_type_dict, rule_dict, execute_type_tuple, UiControlDict
-from common.libs.db import project_db, R
+from common.libs.db import project_db, R, MyPyMysql
 from common.libs.api_result import *
 from common.libs.response_code import *
 from common.libs.set_app_context import set_app_context
@@ -34,3 +34,4 @@ from common.libs.public_func import check_keys, json_format, timer, RequestParam
 from common.libs.auth import Token, AdminRefreshCache
 from common.libs.query_related import page_size, general_query
 from common.libs.execute_code import execute_code
+from common.libs.db_data_count import DBDataCount

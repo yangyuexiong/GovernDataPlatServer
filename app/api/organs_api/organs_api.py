@@ -5,6 +5,7 @@
 # @File    : organs_api.py
 # @Software: PyCharm
 
+import telnetlib
 
 from all_reference import *
 from app.models.organs.models import Organs
@@ -34,7 +35,7 @@ class OrgansApi(MethodView):
         data = request.get_json()
         organs_name = data.get('organs_name')
         example = data.get('example')
-        ip_port = data.get('ip_port')
+        db_id = data.get('db_id')
         remark = data.get('remark')
 
         query_organs = Organs.query.filter_by(organs_name=organs_name, is_deleted=0).first()
@@ -44,7 +45,7 @@ class OrgansApi(MethodView):
         new_organs = Organs(
             organs_name=organs_name,
             example=example,
-            ip_port=ip_port,
+            db_id=db_id,
             remark=remark,
             creator=g.app_user.username,
             creator_id=g.app_user.id
@@ -59,7 +60,7 @@ class OrgansApi(MethodView):
         organs_id = data.get('id')
         organs_name = data.get('organs_name')
         example = data.get('example')
-        ip_port = data.get('ip_port')
+        db_id = data.get('db_id')
         remark = data.get('remark')
 
         query_organs = Organs.query.get(organs_id)
@@ -72,7 +73,7 @@ class OrgansApi(MethodView):
 
         query_organs.organs_name = organs_name
         query_organs.example = example
-        query_organs.ip_port = ip_port
+        query_organs.db_id = db_id
         query_organs.remark = remark
         query_organs.modifier = g.app_user.username
         query_organs.modifier_id = g.app_user.id
@@ -106,25 +107,79 @@ class OrgansPageApi(MethodView):
         data = request.get_json()
         organs_id = data.get('id')
         organs_name = data.get('organs_name')
-        example = data.get('example')
-        ip_port = data.get('ip_port')
+        db_name = data.get('db_name')
+        db_id = data.get('db_id')
+        ip = data.get('ip')
+        port = data.get('port')
         creator_id = data.get('creator_id')
         is_deleted = data.get('is_deleted', 0)
         page = data.get('page')
         size = data.get('size')
+        limit = page_size(page=page, size=size)
 
-        where_dict = {
-            "id": organs_id,
-            "is_deleted": is_deleted,
-            "creator_id": creator_id,
+        sql = f"""
+        SELECT
+            *
+        FROM
+            zw_organs AS A
+            INNER JOIN zw_test_databases AS B ON A.db_id = B.id
+        WHERE
+            A.is_deleted = 0
+            {f'AND db_id={db_id}' if db_id else ''}
+            {f'AND A.creator_id={creator_id}' if creator_id else ''}
+            {f'AND organs_name LIKE "%{organs_name}%"' if organs_name else ''}
+            {f'AND db_name LIKE "%{db_name}%"' if db_name else ''}
+            {f'AND db_connection LIKE "%{ip}%"' if ip else ''}
+        LIMIT {limit[0]},{limit[1]}
+            ;
+        """
+
+        sql_count = f"""
+        SELECT
+            COUNT(*)
+        FROM
+            zw_organs AS A
+            INNER JOIN zw_test_databases AS B ON A.db_id = B.id
+        WHERE
+            A.is_deleted = 0
+            {f'AND db_id={db_id}' if db_id else ''}
+            {f'AND A.creator_id={creator_id}' if creator_id else ''}
+            {f'AND organs_name LIKE "%{organs_name}%"' if organs_name else ''}
+            {f'AND db_name LIKE "%{db_name}%"' if db_name else ''}
+            {f'AND db_connection LIKE "%{ip}%"' if ip else ''}
+            ;
+        """
+
+        result_list = project_db.select(sql)
+        result_count = project_db.select(sql_count)
+
+        result_data = {
+            'records': result_list if result_list else [],
+            'now_page': page,
+            'total': result_count[0].get('COUNT(*)')
         }
-
-        result_data = general_query(
-            model=Organs,
-            field_list=['organs_name', 'example', 'ip_port'],
-            query_list=[organs_name, example, ip_port],
-            where_dict=where_dict,
-            page=page,
-            size=size
-        )
+        for res in result_data.get('records'):
+            db_connection = res.get('db_connection')
+            db_example = MyPyMysql(**db_connection, debug=False)
+            db_dc = DBDataCount(db_example=db_example)
+            try:
+                db_dc.gen_db_start_time()
+                db_dc.gen_db_run_time()
+                run_time = db_dc.run_time
+            except:
+                run_time = '未启动'
+            host = db_connection.get('host')
+            port = db_connection.get('port')
+            tn = telnetlib.Telnet(host, port=port, timeout=10)
+            telnet = tn.read_some().decode("utf-8", errors='ignore')
+            res['ip'] = host
+            res['port'] = port
+            res['telnet'] = 'OK' if telnet else 'FALSE'
+            try:
+                db_example.ping()
+                ping = 'OK'
+            except:
+                ping = 'FALSE'
+            res['ping'] = ping
+            res['run_time'] = run_time
         return api_result(code=SUCCESS, message=SUCCESS_MESSAGE, data=result_data)
