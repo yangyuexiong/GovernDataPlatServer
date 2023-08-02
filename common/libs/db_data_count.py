@@ -7,6 +7,8 @@
 
 import time
 import datetime
+import subprocess
+import telnetlib
 
 
 class DBDataCount:
@@ -74,6 +76,37 @@ class DBDataCount:
         self.sql_list = [{"user": q.get('User'), "sql": q.get('Info')} for q in self.user_list if q.get('Info')]
         self.executing_sql = len(self.sql_list)
         return self.user_list, self.user_connections, self.sql_list, self.executing_sql
+
+
+def ping_host(host):
+    """ping ip"""
+
+    try:
+        # 使用subprocess.run来运行ping命令
+        result = subprocess.run(["ping", "-c", "1", host], capture_output=True, text=True, timeout=5)
+
+        # 检查返回值，通常，返回值为0表示成功，非0表示失败
+        if result.returncode == 0:
+            print(f"Ping to {host} was successful.")
+            # print(result.stdout)  # 输出ping的结果
+            return True, "OK"
+        else:
+            print(f"Ping to {host} failed.")
+            # print(result.stderr)  # 输出错误信息
+            return False, "FAIL"
+
+    except subprocess.TimeoutExpired:
+        print(f"Timeout while pinging {host}.")
+        return False, "FAIL"
+
+
+def telnet_host(host, port, timeout=3):
+    """telnet ip port"""
+
+    tn = telnetlib.Telnet(host, port=port, timeout=timeout)
+    telnet = tn.read_some().decode("utf-8", errors='ignore')
+    telnet_message = 'OK' if telnet else 'FAIL'
+    return bool(telnet), telnet_message
 
 
 if __name__ == '__main__':

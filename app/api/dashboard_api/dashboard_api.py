@@ -20,6 +20,7 @@ class DashboardApi(MethodView):
 
         data = request.get_json()
 
+        """
         dc = DBDataCount(db_example=project_db)
 
         # db磁盘占用
@@ -49,5 +50,58 @@ class DashboardApi(MethodView):
             "sql_list": sql_list,
             "cup_use": f"{cpu_usage}%",
             "memory_use": f"{memory_usage}%"
+        }
+        """
+
+        query_user_organs = """
+        SELECT
+            B.id
+        FROM
+            zw_auth_admin AS A
+            INNER JOIN zw_organs AS B ON A.id = B.creator_id;
+        """
+        user_organs_ids = project_db.select(query_user_organs)
+        ids = tuple([obj.get('id') for obj in user_organs_ids])
+
+        if not ids:
+            data = {
+                "telnet_success": 0,
+                "telnet_fail": 0,
+                "ping_success": 0,
+                "ping_fail": 0
+            }
+            return data
+
+        if len(ids) > 1:
+            sql = f"""SELECT * FROM zw_alarm WHERE status = 0 and organs_id in {ids};"""
+        else:
+            sql = f"""SELECT * FROM zw_alarm WHERE status = 0 and organs_id = {ids[0]};"""
+
+        result = project_db.select(sql)
+
+        telnet_success = 0
+        telnet_fail = 0
+        ping_success = 0
+        ping_fail = 0
+
+        for res in result:
+            ping = res.get('ping')
+            telnet = res.get('telnet')
+
+            if telnet == "OK":
+                telnet_success += 1
+            else:
+                telnet_fail += 1
+
+            if ping == "OK":
+                ping_success += 1
+            else:
+                ping_fail += 1
+
+        data = {
+            "telnet_success": telnet_success,
+            "telnet_fail": telnet_fail,
+            "ping_success": ping_success,
+            "ping_fail": ping_fail
         }
         return api_result(code=POST_SUCCESS, message=SUCCESS_MESSAGE, data=data)

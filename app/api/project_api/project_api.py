@@ -134,16 +134,6 @@ class ProjectPageApi(MethodView):
         page = data.get('page')
         size = data.get('size')
 
-        sql = """
-        SELECT * 
-        FROM exile5_test_project  
-        WHERE 
-        id = "id" 
-        and project_name LIKE"%B1%" 
-        and is_deleted = 0
-        ORDER BY create_timestamp LIMIT 0,20;
-        """
-
         where_dict = {
             "is_deleted": is_deleted
         }

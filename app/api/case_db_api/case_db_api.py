@@ -172,23 +172,16 @@ class CaseDBPageApi(MethodView):
         page = data.get('page')
         size = data.get('size')
 
-        sql = """
-        SELECT * 
-        FROM exile5_test_databases  
-        WHERE 
-        id = "id" 
-        and name LIKE"%yyx%" 
-        and db_type = "db_type" 
-        and is_deleted = 0
-        ORDER BY create_timestamp LIMIT 0,20;
-        """
+        current_user = g.app_user.username
+        current_user_id = g.app_user.id
 
         where_dict = {
             "id": db_id,
             "db_type": db_type,
             "is_deleted": is_deleted,
-            "creator_id": creator_id
         }
+        if current_user != 'admin':
+            where_dict['creator_id'] = current_user_id
 
         result_data = general_query(
             model=TestDatabases,

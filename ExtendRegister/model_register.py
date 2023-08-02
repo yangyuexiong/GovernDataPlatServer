@@ -12,3 +12,4 @@ from app.models.test_env.models import TestEnv
 from app.models.test_case_db.models import TestDatabases
 from app.models.push_reminder.models import MailConfModel, DingDingConfModel, DingDingPushLogsModel
 from app.models.organs.models import Organs
+from app.models.alarm.models import Alarm

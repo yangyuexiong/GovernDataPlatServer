@@ -20,6 +20,7 @@ from .mail_api.mail_api import MailApi, MailPageApi
 from .dingding_api.dingding_api import DingDingPushConfApi, DingDingPushConfPageApi
 from .project_api.project_api import ProjectApi, ProjectPageApi
 from .organs_api.organs_api import OrgansApi, OrgansPageApi
+from .alarm_api.alarm_api import AlarmLogsApi
 
 api = Blueprint('api', __name__)
 crm = Blueprint('crm', __name__)
@@ -65,3 +66,5 @@ api.add_url_rule('/project_page', view_func=ProjectPageApi.as_view('project_page
 api.add_url_rule('/organs', view_func=OrgansApi.as_view('organs'))
 api.add_url_rule('/organs/<organs_id>', view_func=OrgansApi.as_view('organs_detail'))
 api.add_url_rule('/organs_page', view_func=OrgansPageApi.as_view('organs_page'))
+
+api.add_url_rule('/alarm_logs_page', view_func=AlarmLogsApi.as_view('alarm_logs_page'))

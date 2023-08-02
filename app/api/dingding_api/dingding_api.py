@@ -125,16 +125,6 @@ class DingDingPushConfPageApi(MethodView):
         page = data.get('page')
         size = data.get('size')
 
-        sql = """
-        SELECT * 
-        FROM exile5_ding_ding_conf  
-        WHERE 
-        id = "id" 
-        and title LIKE"%B1%" 
-        and ding_talk_url LIKE"%B1%" 
-        ORDER BY create_timestamp LIMIT 0,20;
-        """
-
         where_dict = {
             "id": dd_conf_id,
             "is_deleted": is_deleted,

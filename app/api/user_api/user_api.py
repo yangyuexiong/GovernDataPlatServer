@@ -323,15 +323,6 @@ class UserPageApi(MethodView):
         page = data.get('page')
         size = data.get('size')
 
-        sql = """
-        SELECT * 
-        FROM exile5_auth_admin  
-        WHERE 
-        id = "id" 
-        or username LIKE"%admin%" 
-        ORDER BY create_timestamp LIMIT 0,20;
-        """
-
         where_dict = {
             "id": user_id,
         }

@@ -5,10 +5,9 @@
 # @File    : organs_api.py
 # @Software: PyCharm
 
-import telnetlib
-
 from all_reference import *
 from app.models.organs.models import Organs
+from app.models.alarm.models import Alarm
 
 
 class OrgansApi(MethodView):
@@ -117,6 +116,9 @@ class OrgansPageApi(MethodView):
         size = data.get('size')
         limit = page_size(page=page, size=size)
 
+        current_user = g.app_user.username
+        current_user_id = g.app_user.id
+
         sql = f"""
         SELECT
             *
@@ -125,6 +127,7 @@ class OrgansPageApi(MethodView):
             INNER JOIN zw_test_databases AS B ON A.db_id = B.id
         WHERE
             A.is_deleted = 0
+            {f'AND A.creator_id={current_user_id}' if current_user != 'admin' else ''}
             {f'AND db_id={db_id}' if db_id else ''}
             {f'AND A.creator_id={creator_id}' if creator_id else ''}
             {f'AND organs_name LIKE "%{organs_name}%"' if organs_name else ''}
@@ -142,6 +145,7 @@ class OrgansPageApi(MethodView):
             INNER JOIN zw_test_databases AS B ON A.db_id = B.id
         WHERE
             A.is_deleted = 0
+            {f'AND A.creator_id={current_user_id}' if current_user != 'admin' else ''}
             {f'AND db_id={db_id}' if db_id else ''}
             {f'AND A.creator_id={creator_id}' if creator_id else ''}
             {f'AND organs_name LIKE "%{organs_name}%"' if organs_name else ''}
@@ -158,28 +162,42 @@ class OrgansPageApi(MethodView):
             'now_page': page,
             'total': result_count[0].get('COUNT(*)')
         }
+
         for res in result_data.get('records'):
             db_connection = res.get('db_connection')
-            db_example = MyPyMysql(**db_connection, debug=False)
-            db_dc = DBDataCount(db_example=db_example)
-            try:
-                db_dc.gen_db_start_time()
-                db_dc.gen_db_run_time()
-                run_time = db_dc.run_time
-            except:
-                run_time = '未启动'
+            # db_example = MyPyMysql(**db_connection, debug=False)
+            # db_dc = DBDataCount(db_example=db_example)
+            # try:
+            #     db_dc.gen_db_start_time()
+            #     db_dc.gen_db_run_time()
+            #     run_time = db_dc.run_time
+            # except:
+            #     run_time = '未启动'
             host = db_connection.get('host')
             port = db_connection.get('port')
-            tn = telnetlib.Telnet(host, port=port, timeout=10)
-            telnet = tn.read_some().decode("utf-8", errors='ignore')
+
+            telnet, telnet_message = telnet_host(host, port, 10)
+
             res['ip'] = host
             res['port'] = port
-            res['telnet'] = 'OK' if telnet else 'FALSE'
-            try:
-                db_example.ping()
-                ping = 'OK'
-            except:
-                ping = 'FALSE'
-            res['ping'] = ping
-            res['run_time'] = run_time
+            res['telnet'] = telnet_message
+            # try:
+            #     db_example.ping()
+            #     ping = 'OK'
+            # except:
+            #     ping = 'FALSE'
+            ping, ping_message = ping_host(host=host)
+            res['ping'] = ping_message
+            # res['run_time'] = run_time
+
+            if not ping or not telnet:
+                status = 0
+                organs_id = res.get("id")
+                organs_name = res.get("organs_name")
+                new_alarm = Alarm(
+                    organs_id=organs_id, organs_name=organs_name, ip=host, port=port, ping=ping_message,
+                    telnet=telnet_message, status=status
+                )
+                new_alarm.save()
+
         return api_result(code=SUCCESS, message=SUCCESS_MESSAGE, data=result_data)

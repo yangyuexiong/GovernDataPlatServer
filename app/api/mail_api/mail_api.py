@@ -114,16 +114,6 @@ class MailPageApi(MethodView):
         page = data.get('page')
         size = data.get('size')
 
-        sql = """
-        SELECT * 
-        FROM exile5_mail_conf  
-        WHERE 
-        id = "id" 
-        and mail LIKE"%B1%" 
-        and mail_user LIKE"%B1%" 
-        ORDER BY create_timestamp LIMIT 0,20;
-        """
-
         where_dict = {
             "id": mail_id,
             "is_deleted": is_deleted,

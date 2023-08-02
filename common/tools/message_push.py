@@ -75,11 +75,10 @@ class MessagePush:
         print(response.json())
 
     @staticmethod
-    def ding_ding_push(ding_talk_url=None, report_url=None, markdown_text=None):
+    def ding_ding_push(ding_talk_url=None, markdown_text=None):
         """
         钉钉推送
         :param ding_talk_url:
-        :param report_url:
         :param markdown_text:
         :return:
         """
@@ -90,8 +89,7 @@ class MessagePush:
             "Content-Type": "application/json;charset=utf-8"
         }
 
-        report_link = f"  \n  > 报告地址:[{report_url}]({report_url})"
-        text = f"{markdown_text}{report_link}"
+        text = f"{markdown_text}"
         json_data = {
             "msgtype": "markdown",
             "markdown": {
