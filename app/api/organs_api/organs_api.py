@@ -191,13 +191,19 @@ class OrgansPageApi(MethodView):
             # res['run_time'] = run_time
 
             if not ping or not telnet:
-                status = 0
-                organs_id = res.get("id")
-                organs_name = res.get("organs_name")
-                new_alarm = Alarm(
-                    organs_id=organs_id, organs_name=organs_name, ip=host, port=port, ping=ping_message,
-                    telnet=telnet_message, status=status
-                )
-                new_alarm.save()
+                query_alarm = Alarm.query.filter_by(ip=host, status=0).first()
+                if not query_alarm:
+                    status = 0
+                    organs_id = res.get("id")
+                    organs_name = res.get("organs_name")
+                    new_alarm = Alarm(
+                        organs_id=organs_id, organs_name=organs_name, ip=host, port=port, ping=ping_message,
+                        telnet=telnet_message, status=status, ping_fail=0, telnet_fail=0
+                    )
+                    new_alarm.save()
+                else:
+                    query_alarm.add_ping_fail(ping)
+                    query_alarm.add_telnet_fail(telnet)
+                    db.session.commit()
 
         return api_result(code=SUCCESS, message=SUCCESS_MESSAGE, data=result_data)

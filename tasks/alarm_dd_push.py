@@ -28,7 +28,7 @@ is_push = {}
 
 # minutes 分
 # seconds 秒
-@sched.scheduled_job('interval', start_date='2023-1-1', end_date='2033-1-1', seconds=5)
+@sched.scheduled_job('interval', start_date='2023-1-1', end_date='2033-1-1', seconds=8)
 def interval_task1():
     """dd push"""
 

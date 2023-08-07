@@ -87,16 +87,21 @@ class DashboardApi(MethodView):
         for res in result:
             ping = res.get('ping')
             telnet = res.get('telnet')
+            pf = res.get('ping_fail', 0)
+            tf = res.get('telnet_fail', 0)
 
-            if telnet == "OK":
-                telnet_success += 1
-            else:
-                telnet_fail += 1
+            ping_fail += pf
+            telnet_fail += tf
 
-            if ping == "OK":
-                ping_success += 1
-            else:
-                ping_fail += 1
+            # if telnet == "OK":
+            #     telnet_success += 1
+            # else:
+            #     telnet_fail += 1
+            #
+            # if ping == "OK":
+            #     ping_success += 1
+            # else:
+            #     ping_fail += 1
 
         data = {
             "telnet_success": telnet_success,
