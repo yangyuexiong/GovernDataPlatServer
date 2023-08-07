@@ -103,10 +103,13 @@ def ping_host(host):
 def telnet_host(host, port, timeout=3):
     """telnet ip port"""
 
-    tn = telnetlib.Telnet(host, port=port, timeout=timeout)
-    telnet = tn.read_some().decode("utf-8", errors='ignore')
-    telnet_message = 'OK' if telnet else 'FAIL'
-    return bool(telnet), telnet_message
+    try:
+        tn = telnetlib.Telnet(host, port=port, timeout=timeout)
+        telnet = tn.read_some().decode("utf-8", errors='ignore')
+        telnet_message = 'OK' if telnet else 'FAIL'
+        return bool(telnet), telnet_message
+    except BaseException as e:
+        return False, 'FAIL'
 
 
 if __name__ == '__main__':
