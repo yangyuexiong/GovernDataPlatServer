@@ -37,9 +37,9 @@ class OrgansApi(MethodView):
         db_id = data.get('db_id')
         remark = data.get('remark')
 
-        query_organs = Organs.query.filter_by(organs_name=organs_name, is_deleted=0).first()
-        if query_organs:
-            return api_result(code=UNIQUE_ERROR, message=f'单位: {env_url} 已经存在')
+        # query_organs = Organs.query.filter_by(organs_name=organs_name, is_deleted=0).first()
+        # if query_organs:
+        #     return api_result(code=UNIQUE_ERROR, message=f'单位: {organs_name} 已经存在')
 
         new_organs = Organs(
             organs_name=organs_name,
@@ -66,9 +66,9 @@ class OrgansApi(MethodView):
         if not query_organs:
             return api_result(code=NO_DATA, message='单位地址不存在')
 
-        if query_organs.organs_name != organs_name:
-            if Organs.query.filter_by(organs_name=organs_name, is_deleted=0).all():
-                return api_result(code=UNIQUE_ERROR, message=f'单位: {organs_name} 已经存在')
+        # if query_organs.organs_name != organs_name:
+        #     if Organs.query.filter_by(organs_name=organs_name, is_deleted=0).all():
+        #         return api_result(code=UNIQUE_ERROR, message=f'单位: {organs_name} 已经存在')
 
         query_organs.organs_name = organs_name
         query_organs.example = example
