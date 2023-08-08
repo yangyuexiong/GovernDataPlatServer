@@ -58,55 +58,36 @@ class DashboardApi(MethodView):
             B.id
         FROM
             zw_auth_admin AS A
-            INNER JOIN zw_organs AS B ON A.id = B.creator_id;
+            INNER JOIN zw_organs AS B ON A.id = B.creator_id
+        WHERE
+            B.is_deleted = 0;
         """
         user_organs_ids = project_db.select(query_user_organs)
-        ids = tuple([obj.get('id') for obj in user_organs_ids])
+        organs_ids = [obj.get('id') for obj in user_organs_ids]
 
-        if not ids:
+        if not organs_ids:
             data = {
                 "telnet_success": 0,
-                "telnet_fail": 0,
+                # "telnet_fail": 0,
                 "ping_success": 0,
-                "ping_fail": 0
+                # "ping_fail": 0
             }
-            return data
-
-        if len(ids) > 1:
-            sql = f"""SELECT * FROM zw_alarm WHERE status = 0 and organs_id in {ids};"""
+            return api_result(code=POST_SUCCESS, message=SUCCESS_MESSAGE, data=data)
         else:
-            sql = f"""SELECT * FROM zw_alarm WHERE status = 0 and organs_id = {ids[0]};"""
+            if len(organs_ids) == 1:
+                organs_ids.append(0)
 
-        result = project_db.select(sql)
+            organs_id_list = tuple(organs_ids)
 
-        telnet_success = 0
-        telnet_fail = 0
-        ping_success = 0
-        ping_fail = 0
+            fail_ping_sql = f"""SELECT ip FROM zw_alarm WHERE status = 0 AND ping="FAIL" AND organs_id in {organs_id_list} GROUP BY ip;"""
+            fail_telnet_sql = f"""SELECT ip FROM zw_alarm WHERE status = 0 AND telnet="FAIL" AND organs_id in {organs_id_list} GROUP BY ip;"""
+            fp_result = project_db.select(fail_ping_sql)
+            ft_result = project_db.select(fail_telnet_sql)
 
-        for res in result:
-            ping = res.get('ping')
-            telnet = res.get('telnet')
-            pf = res.get('ping_fail', 0)
-            tf = res.get('telnet_fail', 0)
-
-            ping_fail += pf
-            telnet_fail += tf
-
-            # if telnet == "OK":
-            #     telnet_success += 1
-            # else:
-            #     telnet_fail += 1
-            #
-            # if ping == "OK":
-            #     ping_success += 1
-            # else:
-            #     ping_fail += 1
-
-        data = {
-            "telnet_success": telnet_success,
-            "telnet_fail": telnet_fail,
-            "ping_success": ping_success,
-            "ping_fail": ping_fail
-        }
-        return api_result(code=POST_SUCCESS, message=SUCCESS_MESSAGE, data=data)
+            data = {
+                "ping_success": len(organs_ids),
+                "ping_fail": len(fp_result),
+                "telnet_success": len(organs_ids),
+                "telnet_fail": len(ft_result),
+            }
+            return api_result(code=POST_SUCCESS, message=SUCCESS_MESSAGE, data=data)
